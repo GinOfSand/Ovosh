@@ -18,6 +18,8 @@ using System.Text.RegularExpressions;
 using System.Windows.Controls.Primitives;
 using System.Data;
 using System.Runtime.Remoting.Contexts;
+using System.Configuration;
+using System.Management.Instrumentation;
 
 namespace Ovosh
 {
@@ -35,10 +37,11 @@ namespace Ovosh
             InitializeComponent();
 
         }
-        public string W_i_n()
+        public string W_i_n(string cofig = "Введите значение")
         {
             string c = null;
             Window1 window = new Window1();
+            window.Color.Text = cofig;
             window.Owner = this;
             window.WindowStartupLocation = WindowStartupLocation.CenterScreen;
             if (window.ShowDialog() == true)
@@ -54,6 +57,11 @@ namespace Ovosh
             {
 
                 SqlCommand cmd = com;
+                //cmd.Parameters.Add("@p1", SqlDbType.NVarChar).Value = "Тип";
+                //cmd.Parameters.Add("@p2", SqlDbType.NVarChar).Value = "Цвет";
+                //cmd.Parameters.Add("@p3", SqlDbType.NVarChar).Value = "Название";
+                //cmd.Parameters.Add("@p4", SqlDbType.NVarChar).Value = "Колорийность";
+                //cmd.Parameters.Add("@p5", SqlDbType.NVarChar).Value = "id";
 
                 DataTable table = new DataTable();
                 if (Tab1.IsSelected)
@@ -70,7 +78,7 @@ namespace Ovosh
                     DATA_TABLE2.ItemsSource = table.DefaultView;
                 }
                 DATA_TABLE.DataContext = table;
-                rdr.Close();
+               
             }
             catch
             {
@@ -79,19 +87,23 @@ namespace Ovosh
         }
         private void btnConnect_Click(object sender, RoutedEventArgs e)
         {
-
+            if (conect == null) 
+            { 
             try
-            {
-                conect = new SqlConnection(@"Data Source = DESKTOP-H6EAR4O\SQLEXPRESS; Initial Catalog = OiF;
-                Integrated Security = True;");
+                {
+                //@"Data Source = DESKTOP-H6EAR4O\SQLEXPRESS; Initial Catalog = OiF;
+                //Integrated Security = True;"
+                conect = new SqlConnection();
+                conect.ConnectionString = ConfigurationManager.ConnectionStrings["MyConnectionString"].ConnectionString;
                 conect.Open();
                 MessageBox.Show("Соединение установлено", "Успешно", MessageBoxButton.OK, MessageBoxImage.Information);
-            }
+                }
             catch
-            {
-                MessageBox.Show("Ошибка подключения к Базе Данных!", "Оибка соединения", MessageBoxButton.OK, MessageBoxImage.Error);
+                {
+                MessageBox.Show("Ошибка подключения к Базе Данных!", "Ошбка соединения", MessageBoxButton.OK, MessageBoxImage.Error);
                 conect = null;
-            }
+                }
+             }
 
         }
 
@@ -159,7 +171,7 @@ namespace Ovosh
 
         private void ButtonColor_Chose_Click(object sender, RoutedEventArgs e)
         {
-            conf = W_i_n();
+            conf = W_i_n("Введите цвет");
             Tabler(new SqlCommand($"SELECT COUNT(*) AS Выбранного_Цвета FROM Table_O_F WHERE Цвет = '{conf}'", conect));
 
         }
@@ -177,7 +189,7 @@ namespace Ovosh
         {
 
 
-            conf = W_i_n();
+            conf = W_i_n("Задайте максимальную колорийность");
             int d;
             if (int.TryParse(conf, out d))
             {
@@ -197,7 +209,7 @@ namespace Ovosh
         private void Button_Kolori_bolshe(object sender, RoutedEventArgs e)
         {
 
-            conf = W_i_n();
+            conf = W_i_n("Задайте минимальню колорийность");
             int d;
             if (int.TryParse(conf, out d))
             {
@@ -236,7 +248,7 @@ namespace Ovosh
 
         private void Button_Red_Jelow_Click(object sender, RoutedEventArgs e)
         {
-            Tabler(new SqlCommand("SELECT Название, Цвет FROM Table_O_F WHERE Цвет = 'Красный' AND Цвет = 'Желтый'", conect));
+            Tabler(new SqlCommand("SELECT Название, Цвет FROM Table_O_F WHERE Цвет = 'Красный' OR Цвет = 'Желтый'", conect));
         }
     }
 }
